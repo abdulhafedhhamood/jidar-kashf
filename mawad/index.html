@@ -124,12 +124,13 @@ function suggest(){const q=nz($("item").value.trim());const box=$("sugg");$("pic
   const ws=q.split(/\s+/);const hits=CAT.filter(i=>ws.every(w=>i.k.includes(w))).slice(0,30);
   box.replaceChildren(...hits.map(i=>{const b=document.createElement("button");b.type="button";
     const n=document.createElement("span");n.className="nm";n.textContent=i.name;const c=document.createElement("span");c.className="code badge";c.textContent="#"+i.code;
-    const st=document.createElement("span");st.className="st";st.textContent=(i.qty!=null?`الخالدية: ${+i.qty}`:"")+(i.unit?` ${i.unit}`:"");
+    const st=document.createElement("span");st.className="st";st.textContent=(i.unit?`${i.unit} • `:"")+(i.qty!=null?`الخالدية ${+i.qty}`:"")+(i.main!=null?` • الرئيسي ${+i.main}`:"");
     b.append(n,c,st);b.onclick=()=>pick(i);return b}));box.hidden=!hits.length}
 function pick(i){$("item").value=i.name;$("code").value=i.code;$("sugg").hidden=true;
-  if(i.unit){unit=i.unit;document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",c.textContent===i.unit));
-    if(![...document.querySelectorAll("#units .chip")].some(c=>c.textContent===i.unit)){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=i.unit;b.setAttribute("aria-pressed","true");b.onclick=()=>{unit=i.unit;document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",c===b))};$("units").appendChild(b)}}
-  $("picked").hidden=false;$("picked").textContent=`✓ #${i.code} من ديجيتال برو`+(i.qty!=null?` • المتوفر في الخالدية ${+i.qty}`:"");$("qty").focus();$("qty").select()}
+  if(i.unit){unit=i.unit;const same=c=>nz(c.textContent)===nz(i.unit);const ex=[...document.querySelectorAll("#units .chip")].find(same);if(ex)unit=ex.textContent;
+    document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",same(c)));
+    if(!ex){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=i.unit;b.setAttribute("aria-pressed","true");b.onclick=()=>{unit=i.unit;document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",c===b))};$("units").appendChild(b)}}
+  $("picked").hidden=false;$("picked").textContent=`✓ #${i.code} من ديجيتال برو`+(i.qty!=null?` • الخالدية ${+i.qty}`:"")+(i.main!=null?` • الرئيسي ${+i.main}`:"");$("qty").focus();$("qty").select()}
 $("item").addEventListener("input",suggest);
 function conn(ok,text){$("dot").className="dot "+(ok?"on":"off");$("conn").textContent=text}
 function row(i,canDel){
