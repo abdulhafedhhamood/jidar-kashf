@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b3d91">
+<title>نواقص المستودع</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0b3d91;--navy2:#082d6b;--gold:#e8b923;--bg:#f2f5fb;--card:#fff;--fg:#14213d;--mut:#5d6b86;--line:#dfe5f0;--ok:#1f9d55;--bad:#d64545;--chip:#eef2fb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1324;--card:#121c33;--fg:#eef2fb;--mut:#9aa7c2;--line:#22304f;--chip:#1a2644;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Tajawal,"Segoe UI",Tahoma,sans-serif;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:calc(18px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 22px max(16px,env(safe-area-inset-left));border-bottom:4px solid var(--gold)}
+header h1{margin:0;font-size:26px;font-weight:800;text-wrap:balance}
+.route{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:15px}
+.route b{background:rgba(255,255,255,.14);padding:4px 10px;border-radius:20px;font-weight:700}
+.route .arr{color:var(--gold);font-weight:800}
+.when{margin-top:6px;font-size:14px;opacity:.9}
+main{max-width:640px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 0 rgba(11,61,145,.04)}
+.card h2{margin:0;font-size:18px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px}
+label{font-size:14px;color:var(--mut);font-weight:700;display:block;margin-bottom:5px}
+input,textarea{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
+input:focus,textarea:focus{border-color:var(--navy)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row>*{min-width:0}
+.qty{display:flex;align-items:stretch;gap:6px}
+.qty button{width:48px;flex:none;font-size:24px;font-weight:800;border-radius:12px;border:1.5px solid var(--line);background:var(--chip);color:var(--fg)}
+.qty input{text-align:center;font-size:20px;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:20px;padding:7px 14px;font:inherit;font-size:15px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn{border:0;border-radius:14px;padding:14px;font:inherit;font-size:18px;font-weight:800;background:var(--gold);color:#1a1300;width:100%}
+.btn:disabled{opacity:.6}
+.btn.sec{background:var(--navy);color:#fff}
+.msg{border-radius:12px;padding:10px 12px;font-weight:700;font-size:15px}
+.msg.ok{background:rgba(31,157,85,.12);color:var(--ok)}
+.msg.bad{background:rgba(214,69,69,.12);color:var(--bad)}
+.list{display:flex;flex-direction:column;gap:8px}
+.it{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.it .main{flex:1;min-width:0}
+.it .name{font-weight:800;overflow-wrap:anywhere}
+.it .sub{font-size:13px;color:var(--mut)}
+.it .q{font-weight:800;color:var(--navy);white-space:nowrap;background:var(--chip);border-radius:10px;padding:4px 10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .it .q{color:var(--gold)}}
+.it .del{border:0;background:none;color:var(--bad);font-size:20px;padding:6px}
+.code{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.sugg{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:12px;margin-top:6px;overflow:hidden;max-height:300px;overflow-y:auto}
+.sugg button{all:unset;display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.sugg button:last-child{border-bottom:0}
+.sugg button:active,.sugg button:focus{background:var(--chip)}
+.sugg .nm{flex:1;min-width:0;font-weight:700;overflow-wrap:anywhere}
+.sugg .st{font-size:13px;color:var(--mut);white-space:nowrap}
+.picked{font-size:14px;color:var(--ok);font-weight:700}
+.empty{color:var(--mut);text-align:center;padding:10px;font-size:15px}
+.badge{font-size:13px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--chip);color:var(--mut)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--mut);margin-left:6px}
+.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>📦 نواقص المستودع</h1>
+  <div class="route"><b>مستودع الخالدية</b><span class="arr">←</span><b>المخزن الرئيسي</b></div>
+  <div class="when">سجّل الأصناف الناقصة خلال اليوم • سند يسوّي التحويل الساعة <b>1:00 الفجر</b></div>
+</header>
+<main>
+  <section class="card" id="login">
+    <h2>الدخول</h2>
+    <div><label for="worker">اسمك</label><input id="worker" autocomplete="name" placeholder="مثال: محمد"></div>
+    <div><label for="pin">الرمز</label><input id="pin" inputmode="numeric" type="password" placeholder="••••"></div>
+    <button class="btn sec" id="enter">دخول</button>
+    <div class="msg bad" id="loginMsg" hidden></div>
+  </section>
+
+  <section class="card" id="form" hidden>
+    <h2>إضافة صنف ناقص <span class="badge"><span class="dot" id="dot"></span><span id="conn">جاري الاتصال…</span></span></h2>
+    <div><label for="item">الصنف <span id="catInfo" style="font-weight:500"></span></label><input id="item" autocomplete="off" placeholder="اكتب جزء من اسم الصنف أو رقمه"><div class="sugg" id="sugg" hidden></div><div class="picked" id="picked" hidden></div></div>
+    <div class="row">
+      <div><label for="code">رقم الصنف (إذا تعرفه)</label><input id="code" class="code" inputmode="numeric" placeholder="1401"></div>
+      <div><label for="qty">الكمية</label><div class="qty"><button type="button" id="minus" aria-label="أقل">−</button><input id="qty" inputmode="decimal" value="1"><button type="button" id="plus" aria-label="أكثر">+</button></div></div>
+    </div>
+    <div><label>الوحدة</label><div class="chips" id="units"></div></div>
+    <div><label for="note">ملاحظة (اختياري)</label><input id="note" placeholder="مثال: مستعجل"></div>
+    <button class="btn" id="add">➕ أضف للتحويل</button>
+    <div class="msg" id="addMsg" hidden></div>
+  </section>
+
+  <section class="card" id="today" hidden>
+    <h2>بانتظار تحويل الليلة <span class="badge" id="count">0</span></h2>
+    <div class="list" id="pending"></div>
+  </section>
+
+  <section class="card" id="history" hidden>
+    <h2>آخر ما تحوّل <span class="badge" id="lastRun"></span></h2>
+    <div class="list" id="done"></div>
+  </section>
+</main>
+<script>
+const UNITS=["حبة","كرتون","دزن","سطل","كيس","لفة","متر","علبة","جالون","طقم"];
+const $=id=>document.getElementById(id);
+const store={get(k,d=""){try{return localStorage.getItem("mawad_"+k)??d}catch(e){return d}},set(k,v){try{localStorage.setItem("mawad_"+k,v)}catch(e){}}};
+let API="",unit=store.get("unit","حبة"),PIN=store.get("pin");
+$("worker").value=store.get("worker");$("pin").value=PIN;
+UNITS.forEach(u=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=u;b.setAttribute("aria-pressed",u===unit);
+  b.onclick=()=>{unit=u;store.set("unit",u);document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",c.textContent===u))};$("units").appendChild(b)});
+$("minus").onclick=()=>{$("qty").value=Math.max(1,(parseFloat($("qty").value)||1)-1)};
+$("plus").onclick=()=>{$("qty").value=(parseFloat($("qty").value)||0)+1};
+async function api(path,body){
+  if(!API){const r=await fetch("api.json?t="+Date.now(),{cache:"no-store"});API=(await r.json()).api.replace(/\/$/,"");}
+  const r=await fetch(API+"/wh/api/"+path,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({pin:PIN},body||{}))});
+  const j=await r.json().catch(()=>({ok:false}));if(r.status===403)throw new Error("pin");return j;
+}
+let CAT=[];
+const nz=t=>(t||"").toLowerCase().replace(/[إأآا]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/ـ/g,"");
+async function loadCat(){try{const j=await api("items");CAT=(j.items||[]).map(i=>Object.assign(i,{k:nz(i.name+" "+i.code)}));
+  $("catInfo").textContent=CAT.length?`(${CAT.length} صنف من ديجيتال برو${j.t?" • تحديث "+j.t.slice(5):""})`:"";}catch(e){}}
+function suggest(){const q=nz($("item").value.trim());const box=$("sugg");$("picked").hidden=true;$("code").value="";
+  if(!CAT.length||q.length<2){box.hidden=true;return}
+  const ws=q.split(/\s+/);const hits=CAT.filter(i=>ws.every(w=>i.k.includes(w))).slice(0,30);
+  box.replaceChildren(...hits.map(i=>{const b=document.createElement("button");b.type="button";
+    const n=document.createElement("span");n.className="nm";n.textContent=i.name;const c=document.createElement("span");c.className="code badge";c.textContent="#"+i.code;
+    const st=document.createElement("span");st.className="st";st.textContent=(i.qty!=null?`الخالدية: ${+i.qty}`:"")+(i.unit?` ${i.unit}`:"");
+    b.append(n,c,st);b.onclick=()=>pick(i);return b}));box.hidden=!hits.length}
+function pick(i){$("item").value=i.name;$("code").value=i.code;$("sugg").hidden=true;
+  if(i.unit){unit=i.unit;document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",c.textContent===i.unit));
+    if(![...document.querySelectorAll("#units .chip")].some(c=>c.textContent===i.unit)){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=i.unit;b.setAttribute("aria-pressed","true");b.onclick=()=>{unit=i.unit;document.querySelectorAll("#units .chip").forEach(c=>c.setAttribute("aria-pressed",c===b))};$("units").appendChild(b)}}
+  $("picked").hidden=false;$("picked").textContent=`✓ #${i.code} من ديجيتال برو`+(i.qty!=null?` • المتوفر في الخالدية ${+i.qty}`:"");$("qty").focus();$("qty").select()}
+$("item").addEventListener("input",suggest);
+function conn(ok,text){$("dot").className="dot "+(ok?"on":"off");$("conn").textContent=text}
+function row(i,canDel){
+  const d=document.createElement("div");d.className="it";
+  const m=document.createElement("div");m.className="main";
+  const n=document.createElement("div");n.className="name";n.textContent=(i.item||"صنف")+" ";
+  if(i.code){const c=document.createElement("span");c.className="code badge";c.textContent="#"+i.code;n.appendChild(c)}
+  const s=document.createElement("div");s.className="sub";s.textContent=`${i.worker} • ${i.t.slice(5).replace("-","/")}`+(i.note?` • ${i.note}`:"")+(i.sent?` • تحوّل ${i.sent}`:"");
+  m.append(n,s);const q=document.createElement("div");q.className="q";q.textContent=`${+i.qty} ${i.unit}`;d.append(m,q);
+  if(canDel){const x=document.createElement("button");x.className="del";x.title="حذف";x.textContent="✕";
+    x.onclick=async()=>{x.disabled=true;try{await api("del",{id:i.id});load()}catch(e){x.disabled=false}};d.appendChild(x)}
+  return d;
+}
+async function load(){
+  try{const j=await api("list");conn(true,"متصل");
+    $("count").textContent=j.pending.length;$("pending").replaceChildren(...(j.pending.length?j.pending.map(i=>row(i,true)):[Object.assign(document.createElement("div"),{className:"empty",textContent:"ما فيه أصناف بعد اليوم"})]));
+    $("done").replaceChildren(...(j.done.length?j.done.slice(0,15).map(i=>row(i,false)):[Object.assign(document.createElement("div"),{className:"empty",textContent:"لا شيء بعد"})]));
+    $("lastRun").textContent=j.last_run?("آخر تحويل "+j.last_run.slice(5)):"";$("lastRun").hidden=!j.last_run;
+    $("today").hidden=$("history").hidden=false;return true;
+  }catch(e){if(e.message==="pin"){logout("الرمز غلط");return false}
+    API="";conn(false,"جهاز سند غير متصل");return false}
+}
+function logout(m){$("form").hidden=$("today").hidden=$("history").hidden=true;$("login").hidden=false;$("loginMsg").hidden=!m;$("loginMsg").textContent=m||""}
+$("enter").onclick=async()=>{
+  const w=$("worker").value.trim();PIN=$("pin").value.trim();
+  if(!w||!PIN){$("loginMsg").hidden=false;$("loginMsg").textContent="اكتب اسمك والرمز";return}
+  store.set("worker",w);store.set("pin",PIN);$("login").hidden=true;$("form").hidden=false;load();loadCat();
+};
+$("add").onclick=async()=>{
+  const item=$("item").value.trim(),code=$("code").value.replace(/\D/g,""),qty=parseFloat($("qty").value);
+  const m=$("addMsg");m.hidden=false;
+  if(!(item||code)||!(qty>0)){m.className="msg bad";m.textContent="اكتب اسم الصنف أو رقمه، والكمية";return}
+  $("add").disabled=true;
+  try{const j=await api("add",{worker:store.get("worker"),item,code,qty,unit,note:$("note").value.trim()});
+    if(j.ok){m.className="msg ok";m.textContent=`✓ انضاف: ${item||("#"+code)} - ${qty} ${unit}`;$("item").value=$("code").value=$("note").value="";$("picked").hidden=true;$("qty").value=1;$("item").focus();load()}
+    else{m.className="msg bad";m.textContent=j.error||"ما انضاف، جرب مرة ثانية"}
+  }catch(e){m.className="msg bad";m.textContent=e.message==="pin"?"الرمز غلط":"جهاز سند غير متصل - جرب بعد دقيقة"}
+  $("add").disabled=false;
+};
+if(store.get("worker")&&PIN){$("login").hidden=true;$("form").hidden=false;load().then(loadCat)}
+setInterval(()=>{if(!$("form").hidden)load()},60000);
+</script>
+</body>
+</html>
