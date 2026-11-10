@@ -166,8 +166,16 @@ try{CART=JSON.parse(store.get("cart","{}"))||{}}catch(e){CART={}}
 $("worker").value=store.get("worker");$("pin").value=PIN;
 UNITS.forEach(u=>$("mUnit").add(new Option(u,u)));
 
+// Sanad's PC address changes when it restarts. The page copy (api.json) can lag ~2 min behind, so also ask GitHub directly.
+async function alive(u){try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch(u+"/wh/api/ping",{signal:c.signal,cache:"no-store"});return r.ok}catch(e){return false}}
+async function findApi(){
+  const tryGet=async f=>{try{const u=(await f()).replace(/\/$/,"");if(u&&await alive(u))return u}catch(e){}return ""};
+  let u=await tryGet(async()=>(await (await fetch("api.json?t="+Date.now(),{cache:"no-store"})).json()).api);
+  if(!u)u=await tryGet(async()=>{const j=await (await fetch("https://api.github.com/repos/abdulhafedhhamood/jidar-kashf/contents/mawad/api.json?t="+Date.now(),{cache:"no-store"})).json();
+    return JSON.parse(atob(j.content.replace(/\s/g,""))).api});
+  if(!u)throw new Error("offline");return u}
 async function api(path,body){
-  if(!API){const r=await fetch("api.json?t="+Date.now(),{cache:"no-store"});API=(await r.json()).api.replace(/\/$/,"")}
+  if(!API)API=await findApi();
   const r=await fetch(API+"/wh/api/"+path,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({pin:PIN},body||{}))});
   const j=await r.json().catch(()=>({ok:false}));if(r.status===403)throw new Error("pin");return j;
 }
@@ -274,7 +282,8 @@ function logout(m){$("shop").hidden=true;$("bar").hidden=true;$("login").hidden=
 $("enter").onclick=()=>{const w=$("worker").value.trim();PIN=$("pin").value.trim();
   if(!w||!PIN){$("loginMsg").hidden=false;$("loginMsg").textContent="اكتب اسمك والرمز";return}store.set("worker",w);store.set("pin",PIN);show()};
 if(store.get("worker")&&PIN)show();
-setInterval(()=>{if(!$("shop").hidden)load()},60000);
+setInterval(()=>{if(!$("shop").hidden)load().then(ok=>{if(ok&&!CAT.length)loadCat()})},60000);
+setInterval(()=>{if(!$("shop").hidden&&!API)load().then(ok=>{if(ok&&!CAT.length)loadCat()})},15000);
 </script>
 </body>
 </html>
