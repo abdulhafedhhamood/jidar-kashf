@@ -19,7 +19,8 @@ header h1{margin:0;font-size:24px;font-weight:800}
 .route b{background:rgba(255,255,255,.14);padding:3px 10px;border-radius:20px}
 .route .arr{color:var(--gold);font-weight:800}
 .when{margin-top:4px;font-size:13px;opacity:.9}
-main{max-width:720px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
+main{max-width:none;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
+#login,#manual,.narrow{max-width:640px;width:100%;margin-inline:auto}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px}
 .card h2{margin:0;font-size:17px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px}
 label{font-size:14px;color:var(--mut);font-weight:700;display:block;margin-bottom:5px}
@@ -49,17 +50,18 @@ input:focus,select:focus{border-color:var(--navy)}
 .crumb{display:flex;align-items:center;gap:10px}
 .crumb button{border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:8px 12px;font:inherit;font-weight:800;white-space:nowrap}
 .crumb b{font-size:18px}
-.items{display:flex;flex-direction:column;gap:8px}
-.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px}
-.row.on{background:var(--sel);border-color:var(--gold)}
-.row .nm{font-weight:800;overflow-wrap:anywhere;min-width:0}
-.row .sub{font-size:13px;color:var(--mut);display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px}
+.items>.empty{grid-column:1/-1}
+.row{display:flex;flex-direction:column;gap:6px;justify-content:space-between;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:9px;min-height:158px;min-width:0}
+.row.on{background:var(--sel);border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
+.row .nm{font-weight:800;font-size:14.5px;line-height:1.3;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.row .sub{font-size:12px;color:var(--mut);display:flex;flex-wrap:wrap;gap:1px 8px;margin-top:3px}
 .row .sub .z{color:var(--bad)}
-.ctl{display:flex;flex-direction:column;gap:6px;align-items:stretch;width:132px}
+.ctl{display:flex;flex-direction:column;gap:5px}
 .step{display:flex;align-items:stretch;gap:4px}
-.step button{width:36px;flex:none;border-radius:10px;border:1.5px solid var(--line);background:var(--chip);color:var(--fg);font-size:22px;font-weight:800;padding:0;line-height:1}
-.step input{text-align:center;font-weight:800;font-size:17px;padding:6px 2px;min-width:0}
-.ctl select{padding:5px 8px;font-size:14px;border-radius:10px}
+.step button{width:38px;flex:none;border-radius:10px;border:1.5px solid var(--line);background:var(--chip);color:var(--fg);font-size:22px;font-weight:800;padding:0;line-height:1;min-height:38px}
+.step input{text-align:center;font-weight:800;font-size:17px;padding:5px 2px;min-width:0;flex:1}
+.ctl select{padding:4px 8px;font-size:13px;border-radius:10px}
 .more{text-align:center;color:var(--mut);font-size:14px;padding:6px}
 details.card summary{font-weight:800;cursor:pointer;list-style:none}
 details.card summary::-webkit-details-marker{display:none}
@@ -73,7 +75,7 @@ details.card summary::-webkit-details-marker{display:none}
 .empty{color:var(--mut);text-align:center;padding:10px;font-size:15px}
 /* bottom bar */
 .bar{position:fixed;inset:auto 0 0 0;z-index:9;background:var(--card);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));box-shadow:0 -6px 20px rgba(11,61,145,.08)}
-.bar .in{max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.bar .in{max-width:none;margin:0 auto;display:flex;gap:10px;align-items:center}
 .bar .sum{flex:1;min-width:0;font-weight:700;font-size:15px}
 .bar .btn{width:auto;padding:12px 20px}
 .bar .clr{background:none;border:0;color:var(--bad);font:inherit;font-weight:700}
@@ -119,11 +121,11 @@ details.card summary::-webkit-details-marker{display:none}
       <button class="btn sec" id="mAdd">أضف للسلة</button>
     </details>
 
-    <section class="card">
+    <section class="card narrow">
       <h2>بانتظار تحويل الليلة <span class="badge" id="count">0</span></h2>
       <div class="list" id="pending"></div>
     </section>
-    <section class="card">
+    <section class="card narrow">
       <h2>آخر ما تحوّل <span class="badge" id="lastRun" hidden></span></h2>
       <div class="list" id="done"></div>
     </section>
@@ -188,16 +190,16 @@ function drawItems(){
   $("tiles").hidden=!browsing;$("items").hidden=browsing;$("crumb").hidden=browsing||!!q;$("curName").textContent=cur;
   if(browsing){drawCats();$("more").hidden=true;return}
   let list;if(q){const ws=q.split(/\s+/);list=CAT.filter(i=>ws.every(w=>i.k.includes(w)))}else list=CAT.filter(i=>i.c===cur);
-  const shown=list.slice(0,150);
+  const shown=list.slice(0,300);
   $("items").replaceChildren(...(shown.length?shown.map(rowEl):[Object.assign(document.createElement("div"),{className:"empty",textContent:CAT.length?"ما لقيت أصناف":"جاري تحميل الأصناف…"})]));
-  $("more").hidden=list.length<=150;$("more").textContent=`يظهر 150 من ${list.length} - اكتب في البحث لتضييق النتائج`;
+  $("more").hidden=list.length<=300;$("more").textContent=`يظهر 300 من ${list.length} - اكتب في البحث لتضييق النتائج`;
 }
 $("back").onclick=()=>{cur="";$("q").value="";drawItems();scrollTo({top:0})};
 function rowEl(i){
   const k=key(i),c=CART[k];
   const r=document.createElement("div");r.className="row"+(c&&c.qty>0?" on":"");
   const L=document.createElement("div");L.style.minWidth=0;
-  const n=document.createElement("div");n.className="nm";n.textContent=i.name;
+  const n=document.createElement("div");n.className="nm";n.textContent=i.name;n.title=i.name;
   const s=document.createElement("div");s.className="sub";
   const add=(t,cls)=>{const e=document.createElement("span");e.textContent=t;if(cls)e.className=cls;s.appendChild(e)};
   add("#"+i.code,"code");add(i.unit);
