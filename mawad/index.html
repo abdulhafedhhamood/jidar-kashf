@@ -69,6 +69,8 @@ input:focus,select:focus{border-color:var(--navy)}
 .step button{width:38px;flex:none;border-radius:10px;border:1.5px solid var(--line);background:var(--chip);color:var(--fg);font-size:22px;font-weight:800;padding:0;line-height:1;min-height:38px}
 .step input{text-align:center;font-weight:800;font-size:17px;padding:5px 2px;min-width:0;flex:1}
 .ctl select{padding:4px 8px;font-size:13px;border-radius:10px}
+.ctl select.one{appearance:none;-webkit-appearance:none;text-align:center;font-weight:800;opacity:1;color:var(--fg);background:var(--chip);border-color:transparent}
+.warn{font-size:12px;font-weight:700;color:var(--bad);line-height:1.3}
 .more{text-align:center;color:var(--mut);font-size:14px;padding:6px}
 details.card summary{font-weight:800;cursor:pointer;list-style:none}
 details.card summary::-webkit-details-marker{display:none}
@@ -238,12 +240,15 @@ function rowEl(i){
   const inp=document.createElement("input");inp.inputMode="decimal";inp.value=c?c.qty:0;inp.setAttribute("aria-label","الكمية");
   const plus=document.createElement("button");plus.type="button";plus.textContent="+";plus.setAttribute("aria-label","أكثر");
   const sel=document.createElement("select");sel.setAttribute("aria-label","الوحدة");
-  [...new Set([i.unit,...UNITS].filter(Boolean))].forEach(u=>sel.add(new Option(u,u)));sel.value=c?c.unit:i.unit;
+  const us=(i.units&&i.units.length?i.units:[i.unit]).filter(Boolean);us.forEach(u=>sel.add(new Option(u,u)));   // only the units DigitalPro has for this item
+  sel.value=c&&us.includes(c.unit)?c.unit:us[0];if(us.length<2){sel.disabled=true;sel.classList.add("one")}
+  const warn=document.createElement("div");warn.className="warn";warn.hidden=true;
   const set=v=>{v=Math.max(0,Math.round((parseFloat(v)||0)*100)/100);inp.value=v;
-    if(v>0)CART[k]={code:i.code,item:i.name,qty:v,unit:sel.value,c:i.c};else delete CART[k];r.classList.toggle("on",v>0);saveCart()};
+    if(v>0)CART[k]={code:i.code,item:i.name,qty:v,unit:sel.value,c:i.c};else delete CART[k];r.classList.toggle("on",v>0);
+    const av=+i.qty;warn.hidden=!(v>0&&i.qty!=null&&sel.value===i.unit&&v>av);warn.textContent=av>0?`المتوفر ${av} ${i.unit} فقط - سند يحوّل المتوفر`:"غير متوفر في الخالدية";saveCart()};
   minus.onclick=()=>set((parseFloat(inp.value)||0)-1);plus.onclick=()=>set((parseFloat(inp.value)||0)+1);
   inp.onchange=()=>set(inp.value);inp.onfocus=()=>inp.select();sel.onchange=()=>{if(CART[k]){CART[k].unit=sel.value;saveCart()}};
-  st.append(plus,inp,minus);C.append(st,sel);r.append(L,C);return r;
+  st.append(plus,inp,minus);C.append(st,sel,warn);r.append(L,C);if(c&&c.qty>0)set(c.qty);return r;
 }
 function drawBar(){
   const v=Object.values(CART);$("bar").hidden=!v.length||$("shop").hidden;
