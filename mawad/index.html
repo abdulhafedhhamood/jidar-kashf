@@ -51,7 +51,11 @@ input:focus,select:focus{border-color:var(--navy)}
 .crumb button{border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:8px 12px;font:inherit;font-weight:800;white-space:nowrap}
 .crumb b{font-size:18px}
 .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px}
-.items>.empty{grid-column:1/-1}
+.items>.empty,.items>.sep{grid-column:1/-1}
+.sep{font-weight:800;font-size:15px;padding:8px 12px;border-radius:12px;margin-top:4px}
+.sep.ok{background:rgba(31,157,85,.12);color:var(--ok)}
+.sep.no{background:rgba(214,69,69,.10);color:var(--bad);margin-top:12px}
+.row.out{opacity:.72}
 .row{display:flex;flex-direction:column;gap:6px;justify-content:space-between;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:9px;min-height:158px;min-width:0}
 .row.on{background:var(--sel);border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
 .pic{aspect-ratio:1/1;width:100%;border-radius:10px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:44px;color:var(--mut)}
@@ -198,14 +202,18 @@ function drawItems(){
   $("tiles").hidden=!browsing;$("items").hidden=browsing;$("crumb").hidden=browsing||!!q;$("curName").textContent=cur?secIcon(cur).join(" "):"";
   if(browsing){drawCats();$("more").hidden=true;return}
   let list;if(q){const ws=q.split(/\s+/);list=CAT.filter(i=>ws.every(w=>i.k.includes(w)))}else list=CAT.filter(i=>i.c===cur);
-  const shown=list.slice(0,300);
-  $("items").replaceChildren(...(shown.length?shown.map(rowEl):[Object.assign(document.createElement("div"),{className:"empty",textContent:CAT.length?"ما لقيت أصناف":"جاري تحميل الأصناف…"})]));
+  const has=i=>+i.qty>0;list=[...list.filter(has),...list.filter(i=>!has(i))];      // available in الخالدية first
+  const shown=list.slice(0,300);const nAv=shown.filter(has).length;
+  const sep=(t,cls)=>Object.assign(document.createElement("div"),{className:"sep "+cls,textContent:t});
+  const els=[];if(shown.length){if(nAv)els.push(sep(`✓ متوفر في مستودع الخالدية (${list.filter(has).length})`,"ok"));
+    shown.forEach((i,k)=>{if(k===nAv&&nAv<shown.length)els.push(sep(`✕ غير متوفر في مستودع الخالدية (${list.length-list.filter(has).length})`,"no"));els.push(rowEl(i))})}
+  $("items").replaceChildren(...(shown.length?els:[Object.assign(document.createElement("div"),{className:"empty",textContent:CAT.length?"ما لقيت أصناف":"جاري تحميل الأصناف…"})]));
   $("more").hidden=list.length<=300;$("more").textContent=`يظهر 300 من ${list.length} - اكتب في البحث لتضييق النتائج`;
 }
 $("back").onclick=()=>{cur="";$("q").value="";drawItems();scrollTo({top:0})};
 function rowEl(i){
   const k=key(i),c=CART[k];
-  const r=document.createElement("div");r.className="row"+(c&&c.qty>0?" on":"");
+  const r=document.createElement("div");r.className="row"+(c&&c.qty>0?" on":"")+(+i.qty>0?"":" out");
   const L=document.createElement("div");L.style.minWidth=0;
   const n=document.createElement("div");n.className="nm";n.textContent=i.name;n.title=i.name;
   const s=document.createElement("div");s.className="sub";
