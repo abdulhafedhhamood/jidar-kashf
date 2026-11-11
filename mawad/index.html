@@ -70,6 +70,7 @@ input:focus,select:focus{border-color:var(--navy)}
 .step input{text-align:center;font-weight:800;font-size:17px;padding:5px 2px;min-width:0;flex:1}
 .ctl select{padding:4px 8px;font-size:13px;border-radius:10px}
 .ctl select.one{appearance:none;-webkit-appearance:none;text-align:center;font-weight:800;opacity:1;color:var(--fg);background:var(--chip);border-color:transparent}
+.eq{font-size:12px;font-weight:700;color:var(--mut);text-align:center}
 .warn{font-size:12px;font-weight:700;color:var(--bad);line-height:1.3}
 .more{text-align:center;color:var(--mut);font-size:14px;padding:6px}
 details.card summary{font-weight:800;cursor:pointer;list-style:none}
@@ -229,7 +230,9 @@ function rowEl(i){
   const s=document.createElement("div");s.className="sub";
   const add=(t,cls)=>{const e=document.createElement("span");e.textContent=t;if(cls)e.className=cls;s.appendChild(e)};
   add("#"+i.code,"code");add(i.unit);
-  if(i.qty!=null)add("الخالدية "+(+i.qty),+i.qty<=0?"z":"");if(i.main!=null)add("الرئيسي "+(+i.main),+i.main<=0?"z":"");
+  const big=(i.units||[]).filter(u=>((i.packs||{})[u]||1)>1).pop(),bp=big?(i.packs[big]||1):1;
+  const both=q=>(+q)+(big&&+q>=bp?` (${Math.floor(+q/bp)} ${big})`:"");
+  if(i.qty!=null)add("الخالدية "+both(i.qty),+i.qty<=0?"z":"");if(i.main!=null)add("الرئيسي "+both(i.main),+i.main<=0?"z":"");
   if(HASIMG){const pc=document.createElement("div");pc.className="pic";
     if(i.img){const im=document.createElement("img");im.loading="lazy";im.alt="";im.src=i.img;im.onerror=()=>{pc.textContent=secIcon(i.c)[0]};pc.appendChild(im)}else pc.textContent=secIcon(i.c)[0];
     L.append(pc)}
@@ -240,15 +243,20 @@ function rowEl(i){
   const inp=document.createElement("input");inp.inputMode="decimal";inp.value=c?c.qty:0;inp.setAttribute("aria-label","الكمية");
   const plus=document.createElement("button");plus.type="button";plus.textContent="+";plus.setAttribute("aria-label","أكثر");
   const sel=document.createElement("select");sel.setAttribute("aria-label","الوحدة");
-  const us=(i.units&&i.units.length?i.units:[i.unit]).filter(Boolean);us.forEach(u=>sel.add(new Option(u,u)));   // only the units DigitalPro has for this item
+  const us=(i.units&&i.units.length?i.units:[i.unit]).filter(Boolean);const pk=u=>+((i.packs||{})[u])||1;   // only the units DigitalPro has for this item
+  us.forEach(u=>sel.add(new Option(pk(u)>1?`${u} (${pk(u)} ${i.unit})`:u,u)));
   sel.value=c&&us.includes(c.unit)?c.unit:us[0];if(us.length<2){sel.disabled=true;sel.classList.add("one")}
+  if(!c){const pu=store.get("u_"+i.code);if(pu&&us.includes(pu))sel.value=pu}                      // remember the worker's usual unit
   const warn=document.createElement("div");warn.className="warn";warn.hidden=true;
+  const eq=document.createElement("div");eq.className="eq";eq.hidden=true;
   const set=v=>{v=Math.max(0,Math.round((parseFloat(v)||0)*100)/100);inp.value=v;
     if(v>0)CART[k]={code:i.code,item:i.name,qty:v,unit:sel.value,c:i.c};else delete CART[k];r.classList.toggle("on",v>0);
-    const av=+i.qty;warn.hidden=!(v>0&&i.qty!=null&&sel.value===i.unit&&v>av);warn.textContent=av>0?`المتوفر ${av} ${i.unit} فقط - سند يحوّل المتوفر`:"غير متوفر في الخالدية";saveCart()};
+    const p=pk(sel.value),av=Math.floor((+i.qty||0)/p);warn.hidden=!(v>0&&i.qty!=null&&v>av);
+    warn.textContent=av>0?`المتوفر ${av} ${sel.value} فقط - سند يحوّل المتوفر`:`غير متوفر بوحدة ${sel.value} في الخالدية`;
+    eq.hidden=!(v>0&&p>1);eq.textContent=`= ${Math.round(v*p*100)/100} ${i.unit}`;saveCart()};
   minus.onclick=()=>set((parseFloat(inp.value)||0)-1);plus.onclick=()=>set((parseFloat(inp.value)||0)+1);
-  inp.onchange=()=>set(inp.value);inp.onfocus=()=>inp.select();sel.onchange=()=>{if(CART[k]){CART[k].unit=sel.value;saveCart()}};
-  st.append(plus,inp,minus);C.append(st,sel,warn);r.append(L,C);if(c&&c.qty>0)set(c.qty);return r;
+  inp.onchange=()=>set(inp.value);inp.onfocus=()=>inp.select();sel.onchange=()=>{store.set("u_"+i.code,sel.value);set(inp.value)};
+  st.append(plus,inp,minus);C.append(st,sel,eq,warn);r.append(L,C);if(c&&c.qty>0)set(c.qty);return r;
 }
 function drawBar(){
   const v=Object.values(CART);$("bar").hidden=!v.length||$("shop").hidden;
