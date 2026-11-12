@@ -63,6 +63,7 @@ footer{color:var(--muted);font-size:.75rem;text-align:center;line-height:1.6}
 @media (max-width:420px){.tot{grid-template-columns:1fr 1fr}.tot .tile:first-child{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style><style>
+[hidden]{display:none!important}
 #lock{max-width:420px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:12px}
 #lock h1{margin:0;color:var(--navy);font-size:1.3rem}
 #lock p{margin:0;color:var(--muted);font-size:.9rem}
@@ -102,7 +103,7 @@ label.rm{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--mu
   <footer id="foot"></footer>
 </div>
 <script>
-const SALT="73cc995e5034cee8bcc0ddd2a34aea73", ITER=250000;
+const SALT="313b04aa120df6847177ef461d2c0a10", ITER=250000;
 const hex=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));
 let KEY=null, D=null, filter="od", q="", open=null;
 async function derive(pw){
