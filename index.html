@@ -103,7 +103,7 @@ label.rm{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--mu
   <footer id="foot"></footer>
 </div>
 <script>
-const SALT="94c8e27a0f365789d4da55466f849344", ITER=250000;
+const SALT="4dda3832120e3eda1b5a66756377a8c1", ITER=250000;
 const hex=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));
 let KEY=null, D=null, filter="od", q="", open=null;
 async function derive(pw){
